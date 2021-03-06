@@ -95,7 +95,7 @@ app.get("/api/bancor/:token", (req, res, next) => respondFromCache(req, res, nex
     if (tokenAddress) {
         let space = await getAvailableSpaceForBaseToken(tokenAddress)
         setToCache(req.originalUrl, space, 10)
-        sendJsonData(res, 'space', space)
+        sendJsonData(res, 'space', JSON.stringify(space))
     } else {
         tokenNotSupported(res)
     }
@@ -107,7 +107,7 @@ app.get("/api/bancor/vortex/rate/:token", (req, res, next) => respondFromCache(r
     if (['vbnt', 'bnt'].includes(token)) {
         let rate = await getVortexExchangeRate(token)
         setToCache(req.originalUrl, rate, 10)
-        sendJsonData(res, 'rate', rate)
+        sendJsonData(res, 'rate', JSON.stringify(rate))
     } else {
         tokenNotSupported(res)
     }
