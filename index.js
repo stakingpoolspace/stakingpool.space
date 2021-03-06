@@ -61,18 +61,11 @@ async function getRate(token) {
     }
 }
 
-function respondFromCache(messageKey) {
-    return (req, res, next) => {
-        let value = getFromCache(req, res)
-        if (value) sendJsonData(res, messageKey, value)
-        else next()
-    }
-}
-
-function getFromCache(req, res) {
+function respondFromCache(req, res, next, messageKey) {
     redisClient.get(req.originalUrl, (error, data) => {
         if (error) res.status(400).send(error)
-        else return data
+        if (data) sendJsonData(res, messageKey, data)
+        else next()
     })
 }
 
@@ -96,7 +89,7 @@ function tokenNotSupported(res) {
     })
 }
 
-app.get("/api/bancor/:token", respondFromCache('space'), async (req, res) => {
+app.get("/api/bancor/:token", (req, res, next) => respondFromCache(req, res, next, 'space'), async (req, res) => {
     let tokenAddress = bancorPool[req.params.token]
 
     if (tokenAddress) {
@@ -108,7 +101,7 @@ app.get("/api/bancor/:token", respondFromCache('space'), async (req, res) => {
     }
 });
 
-app.get("/api/bancor/vortex/rate/:token", respondFromCache('rate'), async (req, res) => {
+app.get("/api/bancor/vortex/rate/:token", (req, res, next) => respondFromCache(req, res, next, 'rate'), async (req, res) => {
     let token = req.params.token
 
     if (['vbnt', 'bnt'].includes(token)) {
