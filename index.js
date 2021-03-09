@@ -17,7 +17,7 @@ const redisClient = redis.createClient(6379);
 const limiterClient = limiter(app, redisClient);
 
 limiterClient({
-    path: '/api/bancor/*',
+    path: ['/api/bancor/:token', '/api/bancor/vortex/rate/:token'],
     method: 'get',
     lookup: ['url', 'headers.x-forwarded-for'],
     total: 2,
