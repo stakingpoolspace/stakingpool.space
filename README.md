@@ -18,7 +18,7 @@ A Node Express server to run the Web3js library to interact with the Ethereum bl
 4. Create a free account on https://infura.io and use your API key on line 11 of index.js.
 5. You should be all set to go. On the command line (in the folder with the code), run
    ```bash
-   node index
+   npm start
    ```
    and you should see the message 'Listening on port 3000'. On a server you'll need to create a reverse proxy pointing a domain address to localhost:3000.
 6. You can test your local setup by running the following command on the command line:
