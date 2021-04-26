@@ -15,7 +15,7 @@ A Node Express server to run the Web3js library to interact with the Ethereum bl
 3. I use Redis to cache API call results for 10 seconds. If you don't want to use caching, remove the functions 'respondFromCache' and 'setToCache' from index.js (and don't forget to remove the function calls). Otherwise download and install Redis. ([Follow this guide for Windows.](https://redislabs.com/blog/redis-on-windows-10/))
 
    I run Redis in a Docker container on my server and have a firewall rule that blocks all external calls on port 6379.
-4. Create a free account on https://infura.io and use your API key on line 11 of index.js.
+4. Create a free account on https://infura.io and use your API key as 'const infuraAPI' in index.js.
 5. You should be all set to go. On the command line (in the folder with the code), run
    ```bash
    npm start
