@@ -129,9 +129,9 @@ function getSecondsForToken(token) {
     return 60
 }
 
-function setToCache(key, value, expire = 0) {
-    if (expire == 0) redisClient.set(key, value)
-    else redisClient.setex(key, expire, value)
+function setToCache(key, value, seconds = 0) {
+    if (seconds == 0) redisClient.set(key, value)
+    else redisClient.setex(key, seconds, value)
 }
 
 function sendJsonData(res, key, value, seconds) {
