@@ -17,7 +17,7 @@ const { tokenAddress } = require('./tokenAddress.js')
 const { erc20Interface } = require('./erc20-abi.js')
 
 const infuraAPI = 'your https://infura.io/ API key';
-const bancorLiquidityProtection = '0xeead394a017b8428e2d5a976a054f303f78f3c0c'
+const bancorLiquidityProtection = '0x42743F4d9f139bfD04680Df50Bce2d7Dd8816F90'
 const bancorVortexBurn = '0x2f87b1fca1769BC3361700078e1985b2Dc0f1142'
 
 const app = express()
@@ -58,9 +58,10 @@ const bancorVortexLiquidityPoolContract = new web3.eth.Contract(liquidityPoolInt
 const bancorVortexBurnContract = new web3.eth.Contract(vortexBurnInterface, bancorVortexBurn);
 
 async function getAvailableSpaceForBaseToken(pool) {
-    return bancorLiquidityProtectionContract.methods.baseTokenAvailableSpace(pool).call()
-        .then(value => web3.utils.fromWei(value))
-        .then(value => +parseFloat(value).toFixed(2))
+    return bancorLiquidityProtectionContract.methods.poolAvailableSpace(pool).call()
+        .then(spaces => spaces[0])
+        .then(space => web3.utils.fromWei(space))
+        .then(space => +parseFloat(space).toFixed(2))
 }
 
 async function getVortexExchangeRate(token) {
