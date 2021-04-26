@@ -8,6 +8,7 @@ const limiter = require('express-limiter')
 const redis = require('redis')
 const Web3 = require('web3')
 
+const { contractRegistryInterface } = require('./contractRegistry-abi.js')
 const { liquidityProtectionInterface } = require('./liquidityProtection-abi.js')
 const { liquidityPoolInterface } = require('./liquidityPool-abi.js')
 const { vortexConverterInterface } = require('./vortexConverter-abi.js')
@@ -16,9 +17,9 @@ const { bancorPool } = require('./bancorPool.js')
 const { tokenAddress } = require('./tokenAddress.js')
 const { erc20Interface } = require('./erc20-abi.js')
 
-const infuraAPI = 'your https://infura.io/ API key';
-const bancorLiquidityProtection = '0x42743F4d9f139bfD04680Df50Bce2d7Dd8816F90'
-const bancorVortexBurn = '0x2f87b1fca1769BC3361700078e1985b2Dc0f1142'
+const infuraAPI = 'your https://infura.io/ API key'
+let bancorContractRegistryAddress = '0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4'
+const bancorVortexBurnAddress = '0x2f87b1fca1769BC3361700078e1985b2Dc0f1142'
 
 const app = express()
 bluebird.promisifyAll(redis)
@@ -52,16 +53,32 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 
-const web3 = new Web3(infuraAPI);
-const bancorLiquidityProtectionContract = new web3.eth.Contract(liquidityProtectionInterface, bancorLiquidityProtection);
+const web3 = new Web3(infuraAPI)
+let bancorContractRegistryContract = new web3.eth.Contract(contractRegistryInterface, bancorContractRegistryAddress)
 const bancorVortexLiquidityPoolContract = new web3.eth.Contract(liquidityPoolInterface, bancorPool['vbnt'])
-const bancorVortexBurnContract = new web3.eth.Contract(vortexBurnInterface, bancorVortexBurn);
+const bancorVortexBurnContract = new web3.eth.Contract(vortexBurnInterface, bancorVortexBurnAddress)
 
 async function getAvailableSpaceForBaseToken(pool) {
+    bancorContractRegistryAddress = await getLatestContractAddress('ContractRegistry')
+    bancorContractRegistryContract = new web3.eth.Contract(contractRegistryInterface, bancorContractRegistryAddress)
+
+    const bancorLiquidityProtectionAddress = await getLatestContractAddress('LiquidityProtection')
+    const bancorLiquidityProtectionContract = new web3.eth.Contract(liquidityProtectionInterface, bancorLiquidityProtectionAddress)
+    
     return bancorLiquidityProtectionContract.methods.poolAvailableSpace(pool).call()
         .then(spaces => spaces[0])
         .then(space => web3.utils.fromWei(space))
         .then(space => +parseFloat(space).toFixed(2))
+}
+
+async function getLatestContractAddress(key) {
+    let address = await redisClient.getAsync(key)
+
+    if (address) return address
+
+    address = await bancorContractRegistryContract.methods.addressOf(web3.utils.asciiToHex(key)).call()
+    setToCache(key, address, 60)
+    return address
 }
 
 async function getVortexExchangeRate(token) {
@@ -189,13 +206,19 @@ async (req, res) => {
     sendJsonData(res, 'burned', JSON.stringify(burned), seconds)
 });
 
-app.get("/api/totalsupply/vbnt", 
+app.get("/api/totalsupply/:token", 
 (req, res, next) => respondFromCache(req, res, next, 'totalSupply'), 
 async (req, res) => {
-    const totalSupply = await getTotalSupply('vbnt')
-    const seconds = getSeconds(req)
-    setToCache(req.originalUrl, totalSupply, seconds)
-    sendJsonData(res, 'totalSupply', JSON.stringify(totalSupply), seconds)
+    const token = req.params.token
+
+    if (['vbnt', 'bnt'].includes(token)) {
+        const totalSupply = await getTotalSupply(token)
+        const seconds = getSeconds(req)
+        setToCache(req.originalUrl, totalSupply, seconds)
+        sendJsonData(res, 'totalSupply', JSON.stringify(totalSupply), seconds)
+    } else {
+        tokenNotSupported(res)
+    }
 });
 
 app.get("/api/defipulse/:category/rank/:project", 
