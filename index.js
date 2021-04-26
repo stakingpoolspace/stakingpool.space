@@ -28,7 +28,7 @@ const limiterClient = limiter(app, redisClient)
 limiterClient({
     path: ['/api/bancor/:token', '/api/bancor/vortex/rate/:token', '/api/defipulse/:category/rank/:project', '/api/bancor/vortex/burn/vbnt'],
     method: 'get',
-    lookup: ['originalUrl', 'headers.x-forwarded-for'],
+    // lookup: ['originalUrl', 'headers.x-forwarded-for'],
     lookup: function(req, res, opts, next) {
         opts.lookup = ['originalUrl', 'headers.x-forwarded-for']
         opts.expire = getSeconds(req) * 1000
