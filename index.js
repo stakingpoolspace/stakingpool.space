@@ -17,7 +17,7 @@ const { bancorPool } = require('./bancorPool.js')
 const { tokenAddress } = require('./tokenAddress.js')
 const { erc20Interface } = require('./erc20-abi.js')
 
-const infuraAPI = 'your https://infura.io/ API key'
+const infuraAPI = 'https://mainnet.infura.io/v3/<your-infura-API-key>'
 let bancorContractRegistryAddress = '0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4'
 const bancorVortexBurnAddress = '0x2f87b1fca1769BC3361700078e1985b2Dc0f1142'
 
